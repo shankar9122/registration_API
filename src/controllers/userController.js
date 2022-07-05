@@ -4,6 +4,7 @@ const User = require("../modals/userModal");
 const sendToken = require("../utils/jwtToken");
 const OTPModal = require("../modals/otpModal")
 const LoginSession = require("../modals/loginSession");
+const sendMail = require("../utils/sendMail")
 
 
 exports.userRegister = catchAsyncError(async (req, res, next) => {
@@ -58,6 +59,9 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
 
     let result = await OTPModal.create({ otp, userId: user._id, mobile: user.mobile })
 
+    await sendMail(user.email, "VERIFY YOUR ACCOUNT", `Your OTP is ${otp}`)
+    
+
     res.status(200).json({
         success: true,
         message: "OTP sent successfully.",
@@ -105,8 +109,8 @@ exports.verifyOTP = catchAsyncError(async (req, res, next) => {
 
 exports.getUserProfile = catchAsyncError(async (req, res, next) => {
 
-    res.status(200).json({ 
-        success: true, 
+    res.status(200).json({
+        success: true,
         message: req.user
     });
 })
