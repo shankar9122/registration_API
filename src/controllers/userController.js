@@ -9,7 +9,7 @@ const sendMail = require("../utils/sendMail")
 
 exports.userRegister = catchAsyncError(async (req, res, next) => {
 
-    const { name, email, gender, mobile, address_1,password, address_2, address_3, landmark, pinCode, city, state } = req.body;
+    const { name, email, gender, mobile, address_1, password, address_2, address_3, landmark, pinCode, city, state } = req.body;
 
     const user = await User.findOne({ mobile: mobile });
 
@@ -42,7 +42,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
 
     if (!mobile || !password) {
         return next(new ErrorHandler("Please Enter Email & Password", 400));
-      }
+    }
 
     const user = await User.findOne({ mobile: mobile }).select("+password");
 
@@ -53,7 +53,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     const isPasswordMatched = await user.comparePassword(password);
 
     if (!isPasswordMatched) {
-      return next(new ErrorHandler("Invalid email or password", 401));
+        return next(new ErrorHandler("Invalid email or password", 401));
     }
 
     await LoginSession.create({
@@ -61,7 +61,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
         mobile: user.mobile,
         deleteData: new Date(Date.now() + 5 * 60 * 1000),
     });
-    
+
 
     sendToken(user, 200, res, "Registered Successfully")
 
@@ -123,5 +123,7 @@ exports.logoutUser = catchAsyncError(async (req, res, next) => {
 
     res.status(200).cookie("token", null, {
         expires: new Date(Date.now()),
+        sameSite: process.env.NODE_ENV === "dev" ? "lax" : "none",
+        secure: process.env.NODE_ENV === "dev" ? false : true,
     }).json({ success: true, message: "Logged out successfully" });
 })
