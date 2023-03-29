@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require("cors");
 const cookieparser = require("cookie-parser");
 const userRoute = require("./src/routers/userRoutes");
+const studentRoute = require("./src/routers/studentRoutes");
 const errorMiddleware = require("./src/middleware/error");
 
 
@@ -14,7 +15,8 @@ app.use(cookieparser());
 app.use(cors());
 
 
-app.use("/api/v1" ,userRoute)
+app.use("/api/v1" ,userRoute);
+app.use("/api/v1" ,studentRoute);
 
 
 app.use(errorMiddleware)

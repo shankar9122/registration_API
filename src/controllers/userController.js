@@ -9,7 +9,7 @@ const sendMail = require("../utils/sendMail")
 
 exports.userRegister = catchAsyncError(async (req, res, next) => {
 
-    const { name, email, gender, mobile, address_1, address_2, address_3, landmark, pinCode, city, state } = req.body;
+    const { name, email, gender, mobile, address_1,password, address_2, address_3, landmark, pinCode, city, state } = req.body;
 
     const user = await User.findOne({ mobile: mobile });
 
@@ -28,45 +28,42 @@ exports.userRegister = catchAsyncError(async (req, res, next) => {
         landmark,
         pinCode,
         city,
-        state
+        state,
+        password
     });
 
-    sendToken(result, 200, res)
+    sendToken(result, 200, res, "Registered Successfully")
 
 });
 
 
 exports.loginUser = catchAsyncError(async (req, res, next) => {
-    const { mobile } = req.body;
+    const { mobile, password } = req.body;
 
-    const user = await User.findOne({ mobile: mobile });
+    if (!mobile || !password) {
+        return next(new ErrorHandler("Please Enter Email & Password", 400));
+      }
+
+    const user = await User.findOne({ mobile: mobile }).select("+password");
 
     if (!user) {
         return next(new ErrorHandler("Please Create your account first.", 400))
     }
 
-    let loginSession = await LoginSession.create({
+    const isPasswordMatched = await user.comparePassword(password);
+
+    if (!isPasswordMatched) {
+      return next(new ErrorHandler("Invalid email or password", 401));
+    }
+
+    await LoginSession.create({
         userId: user._id,
         mobile: user.mobile,
         deleteData: new Date(Date.now() + 5 * 60 * 1000),
     });
-
-
-
-
-    const otp = Math.floor(Math.random() * 1000000);
-    opt = Number(otp)
-
-    let result = await OTPModal.create({ otp, userId: user._id, mobile: user.mobile })
-
-    await sendMail(user.email, "VERIFY YOUR ACCOUNT", `Your OTP is ${otp}`)
     
 
-    res.status(200).json({
-        success: true,
-        message: "OTP sent successfully.",
-        data: result
-    })
+    sendToken(user, 200, res, "Registered Successfully")
 
 });
 
@@ -111,7 +108,7 @@ exports.getUserProfile = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        message: req.user
+        result: req.user
     });
 })
 

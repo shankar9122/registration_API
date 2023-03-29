@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken")
 const validator = require("validator");
-
+const bcrypt = require("bcrypt")
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -23,18 +23,21 @@ const userSchema = new mongoose.Schema({
         unique: true,
         required: [true, "Please Enter your mobile Number"]
     },
+    password: {
+        type: String,
+        required: [true, "Please Enter Your Password"],
+        minLength: [8, "Password should be greater than 8 characters"],
+        select: false,
+    },
     gender: {
         type: String,
         required: true
     },
-    address_1: {
+    address: {
         type: String,
-        required: true
+        required: false
     },
-    address_2: {
-        type: String,
-        required: true
-    },
+    address_2: String,
     address_3: String,
     landmark: String,
     pinCode: {
@@ -51,6 +54,13 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+userSchema.pre("save", async function () {
+    this.password = await bcrypt.hash(this.password, 10);
+});
+
+userSchema.methods.comparePassword = async function (password) {
+    return await bcrypt.compare(password, this.password);
+};
 
 userSchema.methods.getJWTToken = function () {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {

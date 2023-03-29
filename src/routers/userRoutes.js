@@ -13,7 +13,7 @@ userRoute.route("/login").post(loginUser);
 
 userRoute.route("/verify").post(verifyOTP);
 
-userRoute.route("/logout").post(isAuthenticatedUser, logoutUser);
+userRoute.route("/logout").get(isAuthenticatedUser, logoutUser);
 
 userRoute.route("/getProfile").get(isAuthenticatedUser, getUserProfile)
 
