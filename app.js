@@ -12,7 +12,7 @@ app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieparser());
-app.use(cors());
+app.use(cors({credentials: true, origin: true}));
 
 
 app.use("/api/v1" ,userRoute);
